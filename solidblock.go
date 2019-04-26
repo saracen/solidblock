@@ -91,3 +91,10 @@ func (fr *Solidblock) Read(p []byte) (int, error) {
 
 	return n, err
 }
+
+func (fr *Solidblock) Size() int64 {
+	if fr.target < 0 {
+		return 0
+	}
+	return int64(fr.sizes[fr.target])
+}

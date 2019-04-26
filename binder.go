@@ -70,11 +70,18 @@ func (b *Binder) AddCodec(fn func([]io.Reader) ([]io.Reader, error), inputs, out
 
 // Reader binds a reader to an in stream.
 func (b *Binder) Reader(r io.Reader, in int) {
+	if in < 0 || in >= len(b.in) {
+		return
+	}
 	b.in[in] = &reader{fmt.Sprintf("In: %v", in), r}
 }
 
 // Pair pairs two streams, binding an in stream to an out stream.
 func (b *Binder) Pair(in int, out int) {
+	if in < 0 || in >= len(b.in) || out < 0 || out >= len(b.out) {
+		return
+	}
+
 	if b.out[out] == nil {
 		b.out[out] = &reader{fmt.Sprintf("Bind %v:%v", in, out), nil}
 	}
@@ -89,7 +96,7 @@ func (b *Binder) Outputs() ([]io.Reader, error) {
 	for i := range b.codecs {
 		var ins []io.Reader
 		for _, num := range b.codecs[i].inIndexes {
-			if b.in[num] == nil {
+			if b.in[num] == nil || b.in[num].R == nil {
 				return unbound, ErrInputIsUnbound
 			}
 			ins = append(ins, b.in[num].R)
